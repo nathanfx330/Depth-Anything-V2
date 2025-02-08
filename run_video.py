@@ -5,6 +5,7 @@ import matplotlib
 import numpy as np
 import os
 import torch
+from tqdm import tqdm  # Added for progress bars
 
 from depth_anything_v2.dpt import DepthAnythingV2
 
@@ -50,12 +51,13 @@ if __name__ == '__main__':
     margin_width = 50
     cmap = matplotlib.colormaps.get_cmap('Spectral_r')
     
-    for k, filename in enumerate(filenames):
-        print(f'Progress {k+1}/{len(filenames)}: {filename}')
+    for k, filename in enumerate(tqdm(filenames, desc="Processing Videos", unit="file")):
+        print(f'Processing {k+1}/{len(filenames)}: {filename}')
         
         raw_video = cv2.VideoCapture(filename)
         frame_width, frame_height = int(raw_video.get(cv2.CAP_PROP_FRAME_WIDTH)), int(raw_video.get(cv2.CAP_PROP_FRAME_HEIGHT))
         frame_rate = int(raw_video.get(cv2.CAP_PROP_FPS))
+        total_frames = int(raw_video.get(cv2.CAP_PROP_FRAME_COUNT))  # Get total frame count for progress bar
         
         if args.pred_only: 
             output_width = frame_width
@@ -65,28 +67,31 @@ if __name__ == '__main__':
         output_path = os.path.join(args.outdir, os.path.splitext(os.path.basename(filename))[0] + '.mp4')
         out = cv2.VideoWriter(output_path, cv2.VideoWriter_fourcc(*"mp4v"), frame_rate, (output_width, frame_height))
         
-        while raw_video.isOpened():
-            ret, raw_frame = raw_video.read()
-            if not ret:
-                break
-            
-            depth = depth_anything.infer_image(raw_frame, args.input_size)
-            
-            depth = (depth - depth.min()) / (depth.max() - depth.min()) * 255.0
-            depth = depth.astype(np.uint8)
-            
-            if args.grayscale:
-                depth = np.repeat(depth[..., np.newaxis], 3, axis=-1)
-            else:
-                depth = (cmap(depth)[:, :, :3] * 255)[:, :, ::-1].astype(np.uint8)
-            
-            if args.pred_only:
-                out.write(depth)
-            else:
-                split_region = np.ones((frame_height, margin_width, 3), dtype=np.uint8) * 255
-                combined_frame = cv2.hconcat([raw_frame, split_region, depth])
+        with tqdm(total=total_frames, desc=f"Frames in {os.path.basename(filename)}", unit="frame", leave=False) as pbar:
+            while raw_video.isOpened():
+                ret, raw_frame = raw_video.read()
+                if not ret:
+                    break
                 
-                out.write(combined_frame)
+                depth = depth_anything.infer_image(raw_frame, args.input_size)
+                
+                depth = (depth - depth.min()) / (depth.max() - depth.min()) * 255.0
+                depth = depth.astype(np.uint8)
+                
+                if args.grayscale:
+                    depth = np.repeat(depth[..., np.newaxis], 3, axis=-1)
+                else:
+                    depth = (cmap(depth)[:, :, :3] * 255)[:, :, ::-1].astype(np.uint8)
+                
+                if args.pred_only:
+                    out.write(depth)
+                else:
+                    split_region = np.ones((frame_height, margin_width, 3), dtype=np.uint8) * 255
+                    combined_frame = cv2.hconcat([raw_frame, split_region, depth])
+                    
+                    out.write(combined_frame)
+                
+                pbar.update(1)  # Update the frame progress bar
         
         raw_video.release()
         out.release()
