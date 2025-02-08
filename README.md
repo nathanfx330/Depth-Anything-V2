@@ -96,6 +96,11 @@ python run.py \
   --img-path <path> --outdir <outdir> \
   [--input-size <size>] [--pred-only] [--grayscale]
 ```
+***Practicle example:***
+```bash
+python run.py --encoder vitl --img-path <path to photos> --outdir <path to output> --grayscale --pred-only
+```
+
 Options:
 - `--img-path`: You can either 1) point it to an image directory storing all interested images, 2) point it to a single image, or 3) point it to a text file storing all image paths.
 - `--input-size` (optional): By default, we use input size `518` for model inference. ***You can increase the size for even more fine-grained results.***
