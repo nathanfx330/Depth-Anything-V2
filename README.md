@@ -116,6 +116,12 @@ python run_video.py \
   [--input-size <size>] [--pred-only] [--grayscale]
 ```
 
+### Running the script on *videos* for the processed video only in grayscale output (without side-by-side original and depth map)
+```bash
+python run_video.py --encoder vitl --video-path <path to video file> --outdir <path to output dir> --pred-only --grayscale
+```
+
+
 ***Our larger model has better temporal consistency on videos.***
 
 ### Gradio demo
