@@ -99,8 +99,8 @@ python run.py \
 Options:
 - `--img-path`: You can either 1) point it to an image directory storing all interested images, 2) point it to a single image, or 3) point it to a text file storing all image paths.
 - `--input-size` (optional): By default, we use input size `518` for model inference. ***You can increase the size for even more fine-grained results.***
-- `--pred-only` (optional): Only save the predicted depth map, without raw image.
-- `--grayscale` (optional): Save the grayscale depth map, without applying color palette.
+- `--pred-only` (optional): Only save the predicted depth map,  raw image.
+- `--grayscale` (optional): Save the grayscale depth map,  applying color palette.
 
 For example:
 ```bash
@@ -116,7 +116,7 @@ python run_video.py \
   [--input-size <size>] [--pred-only] [--grayscale]
 ```
 
-***Running the script on *videos* for the processed video only in grayscale output (without side-by-side original and depth map)***
+***Running the script on *videos* for the processed video only in grayscale output & without side-by-side original and depth map (suggested prodcution use case) *** 
 ```bash
 python run_video.py --encoder vitl --video-path <path to video file> --outdir <path to output dir> --pred-only --grayscale
 ```
